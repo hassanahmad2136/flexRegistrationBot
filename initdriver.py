@@ -4,7 +4,7 @@ from selenium.webdriver.chrome.options import Options
 def get_driver():
     chrome_options = Options()
     chrome_options.page_load_strategy = 'none'
-    # chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--enable-automation")
     chrome_options.add_argument("--start-maximized")
     chrome_options.add_argument("--lang=en-GB")
