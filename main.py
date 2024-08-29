@@ -9,23 +9,40 @@ driver = get_driver()
 
 url = "https://flexstudent.nu.edu.pk/"
 driver.get(url)
-time.sleep(50)
-print("Checking Now...")
-while len(driver.find_elements(By.TAG_NAME, "input")) == 0:
-    pg.click()
-    time.sleep(1)
+time.sleep(5)
+cookies = driver.get_cookies()
 
+for cookie in cookies:
+    if cookie["name"] == "ASP.NET_SessionId":
+
+        cookie["value"] = "REPLACE" 
+
+        driver.delete_cookie(cookie["name"])
+
+        driver.add_cookie(cookie)
+        break
+
+url = "https://flexstudent.nu.edu.pk/Student/StudentAttendance"
+driver.execute_script(f"window.location.href='{url}'")
+
+while len(driver.find_elements(By.XPATH, "//a[contains(@href, '/Student/CourseRegistration')]")) == 0:
+    pass
+driver.find_element(By.XPATH, "//a[contains(@href, '/Student/CourseRegistration')]").click()
+while "CourseRegistration" not in driver.current_url:
+    pass
+time.sleep(1)
+print(driver.page_source)
+print("Checking Now...")
+
+while len(driver.find_elements(By.TAG_NAME, "input")) == 0: # waiting for registration to open
+    time.sleep(3)
     driver.refresh()
 
-print("here")
+print("Registration is Open")
 while len(driver.find_elements(By.TAG_NAME, "tr")) == 0: pass
 courses = driver.find_elements(By.TAG_NAME, "tr")
-print(len(courses))
-i = 0
 for course in courses:
-    print(i)
-    i+=1
-    if "Computer Vision" in course.text:
+    if "Digital Image Processing" in course.text:
         select_element = course.find_elements(By.TAG_NAME, "select")
         select = Select(select_element[0])
         try:
@@ -34,14 +51,13 @@ for course in courses:
             pass
         driver.execute_script("arguments[0].click();",course.find_elements(By.TAG_NAME, "input")[0])
 driver.execute_script("arguments[0].click();",driver.find_element(By.XPATH,"//button[@id='submit' and contains(text(), 'Register Courses')]"))
-time.sleep(2)
-try:
-    alert = Alert(driver)
-    alert_text = alert.text  # You can capture the text if needed
-    print(f"Alert detected: {alert_text}")
-    alert.accept()  # Or use alert.dismiss() to dismiss the alert
-except:
-    print("No alert present")
 
-
-
+while True:
+    try:
+        alert = Alert(driver)
+        alert_text = alert.text
+        print(f"Alert detected: {alert_text}")
+        alert.accept()  
+        break
+    except:
+        print("No alert present, breaking the loop.")
